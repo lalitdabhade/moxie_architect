@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app import db
 from app.api import admin as admin_api
+from app.api import public as public_api
 from app.config import BASE_DIR, settings
 from app.errors import register_error_handlers
 from app.templating import templates
@@ -56,6 +57,7 @@ def create_app() -> FastAPI:
     app.mount("/uploads/projects", StaticFiles(directory=settings.project_upload_dir), name="project-uploads")
 
     app.include_router(admin_api.router)
+    app.include_router(public_api.router)
     app.include_router(admin_pages.router)
     app.include_router(public_pages.router)
     return app

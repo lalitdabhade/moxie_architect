@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ section.name }}{% endblock %}
+{% block description %}{{ section.name }} projects by {{ SITE.full_name }}. {{ section.tagline }}{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div class="container">
+    <p class="eyebrow">{{ "%02d"|format(section_number) }} · Our work</p>
+    <h1 class="page-title">{{ section.name }}</h1>
+    <p class="page-lead">{{ section.tagline }}</p>
+  </div>
+</header>
+
+<section class="section projects-section">
+  <div class="container">
+    {% if projects %}
+    <div class="project-feed">
+      {% for project in projects %}
+      <article class="project" aria-labelledby="project-{{ project.id }}-title">
+        <h2 class="project-name" id="project-{{ project.id }}-title">{{ project.title }}</h2>
+        {% with eager = loop.first %}{% include "partials/carousel.html" %}{% endwith %}
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-public">
+      <p class="empty-public-title">Projects coming soon.</p>
+      <p>We're preparing photographs of our {{ section.name|lower }} work. In the meantime, tell us about your project.</p>
+      <a class="btn btn-primary" href="/inquiry">Send an inquiry</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if projects %}
+<section class="cta-band">
+  <div class="container cta-inner">
+    <p class="cta-text">Planning something similar?</p>
+    <a class="btn btn-primary" href="/inquiry">Start an inquiry</a>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if projects %}
+<script src="/static/js/lightbox.js" defer></script>
+<script src="/static/js/carousel.js" defer></script>
+{% endif %}
+{% endblock %}

@@ -41,6 +41,20 @@ def list_projects(conn: Connection, section_id: int | None = None) -> list[dict]
     return _attach_images(conn, projects)
 
 
+def list_public_projects(conn: Connection, section_id: int) -> list[dict]:
+    """Projects shown on the website: newest first, only those with at least one image."""
+    return [p for p in list_projects(conn, section_id) if p["images"]]
+
+
+def count_public_by_section(conn: Connection) -> dict[int, int]:
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT p.section_id, COUNT(DISTINCT p.id) AS n FROM projects p "
+            "JOIN project_images i ON i.project_id = p.id GROUP BY p.section_id"
+        )
+        return {row["section_id"]: row["n"] for row in cur.fetchall()}
+
+
 def get_project(conn: Connection, project_id: int, for_update: bool = False) -> dict | None:
     sql = "SELECT id, section_id, title, created_at FROM projects WHERE id = %s"
     if for_update:
