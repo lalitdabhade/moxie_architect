@@ -1,11 +1,18 @@
 """Test fixtures. Everything runs against DB_NAME_TEST, which is wiped between tests."""
+import os
 import re
 import shutil
+import tempfile
+from pathlib import Path
 
-import pytest
-from fastapi.testclient import TestClient
+# Must happen before app.config is imported: keep test uploads out of the real uploads/ folder.
+TEST_UPLOAD_DIR = Path(tempfile.mkdtemp(prefix="architect-test-uploads-"))
+os.environ["UPLOAD_DIR"] = str(TEST_UPLOAD_DIR)
 
-from app import db
+import pytest  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+
+from app import db  # noqa: E402
 from app.config import settings
 
 assert settings.db_name_test != settings.db_name, "DB_NAME_TEST must differ from DB_NAME"
@@ -25,10 +32,16 @@ TABLES = ["admin_sessions", "project_images", "projects", "inquiries", "admins"]
 def _schema():
     db.ensure_database()
     db.init_schema()
+    yield
+    shutil.rmtree(TEST_UPLOAD_DIR, ignore_errors=True)
 
 
 @pytest.fixture(autouse=True)
-def clean_db(tmp_path, monkeypatch):
+def clean_db():
+    for sub in ("projects", "layouts"):
+        folder = TEST_UPLOAD_DIR / sub
+        shutil.rmtree(folder, ignore_errors=True)
+        folder.mkdir(parents=True)
     conn = db.connect()
     try:
         with conn.cursor() as cur:

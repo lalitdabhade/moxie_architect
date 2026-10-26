@@ -1,0 +1,12 @@
+{# Reusable image picker. Expects: picker_id, limits #}
+<div class="image-picker" id="{{ picker_id }}"
+     data-max-bytes="{{ limits.max_bytes }}" data-max-files="{{ limits.max_files }}">
+  <label class="dropzone">
+    <input class="visually-hidden picker-input" type="file" multiple
+           accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+    <span class="dropzone-title">Drop images here or <span class="link-like">browse</span></span>
+    <span class="dropzone-hint">JPG, PNG or WEBP · up to {{ (limits.max_bytes / 1048576)|int }} MB each · max {{ limits.max_files }} at a time</span>
+  </label>
+  <ul class="picker-errors" role="alert"></ul>
+  <ul class="preview-grid" aria-label="Selected images"></ul>
+</div>

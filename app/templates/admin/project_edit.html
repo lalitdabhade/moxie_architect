@@ -1,0 +1,62 @@
+{% extends "admin/base.html" %}
+{% block title %}Edit project{% endblock %}
+{% block content %}
+<div class="admin-page-head">
+  <div>
+    <a class="back-link" href="/admin/projects?section={{ project.section.slug }}">&larr; {{ project.section.name }}</a>
+    <h1 class="admin-title" id="page-title">{{ project.title }}</h1>
+  </div>
+  <button type="button" class="btn btn-danger" id="delete-project">Delete project</button>
+</div>
+
+<script type="application/json" id="project-data">{{ project|tojson }}</script>
+
+<section class="panel" aria-labelledby="details-heading">
+  <h2 class="panel-title" id="details-heading">Details</h2>
+  <form id="details-form" class="form" novalidate>
+    <div class="form-row">
+      <div class="field" data-field="section_id">
+        <label for="section_id">Section</label>
+        <select id="section_id" name="section_id" required>
+          {% for s in sections %}
+          <option value="{{ s.id }}"{% if project.section.id == s.id %} selected{% endif %}>{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field" data-field="title">
+        <label for="title">Title</label>
+        <input id="title" name="title" type="text" required maxlength="{{ limits.title_max }}" value="{{ project.title }}">
+      </div>
+    </div>
+    <p class="form-error" role="alert" hidden></p>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Save details</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel" aria-labelledby="images-heading">
+  <div class="panel-head">
+    <h2 class="panel-title" id="images-heading">Images <span class="tab-count" id="image-count"></span></h2>
+    <p class="panel-hint">Drag to reorder, or use the arrow buttons. The first image is shown first on the website.</p>
+  </div>
+  <ol class="image-grid" id="image-grid" aria-describedby="images-heading"></ol>
+  <p class="empty-note" id="no-images" hidden>This project has no images. It will not appear on the website until you add some.</p>
+</section>
+
+<section class="panel" aria-labelledby="add-heading">
+  <h2 class="panel-title" id="add-heading">Add images</h2>
+  <form id="add-images-form" class="form" novalidate>
+    {% with picker_id = "add-images" %}{% include "admin/_image_picker.html" %}{% endwith %}
+    <div class="progress" hidden><div class="progress-bar"></div></div>
+    <p class="form-error" role="alert" hidden></p>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Upload images</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/admin/image_picker.js"></script>
+<script src="/static/js/admin/project_edit.js"></script>
+{% endblock %}

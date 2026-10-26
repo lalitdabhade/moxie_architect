@@ -4,24 +4,28 @@ SECTIONS = [
     {
         "id": 1,
         "slug": "residential-interior",
+        "key": "residential",  # short prefix for uploaded image filenames
         "name": "Residential Interior Design",
         "tagline": "Homes shaped around the way you live.",
     },
     {
         "id": 2,
         "slug": "commercial-interior",
+        "key": "commercial",
         "name": "Commercial Interior Design",
         "tagline": "Workplaces and retail spaces with purpose.",
     },
     {
         "id": 3,
         "slug": "bungalow-design",
+        "key": "bungalow",
         "name": "Bungalow Design",
         "tagline": "Independent homes, designed from the ground up.",
     },
     {
         "id": 4,
         "slug": "apartment-commercial-complex",
+        "key": "complex",
         "name": "Apartment and Commercial Complex",
         "tagline": "Residential and commercial buildings at scale.",
     },
@@ -29,6 +33,11 @@ SECTIONS = [
 
 SECTIONS_BY_ID = {s["id"]: s for s in SECTIONS}
 SECTIONS_BY_SLUG = {s["slug"]: s for s in SECTIONS}
+
+PROJECT_IMAGE_TYPES = {"jpeg", "png", "webp"}
+PROJECT_IMAGE_MAX_BYTES = 5 * 1024 * 1024
+MAX_IMAGES_PER_UPLOAD = 30
+TITLE_MAX_LENGTH = 200
 
 SERVICE_TYPES = {
     "interior": "Interior",

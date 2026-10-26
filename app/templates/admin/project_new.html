@@ -1,0 +1,45 @@
+{% extends "admin/base.html" %}
+{% block title %}Add project{% endblock %}
+{% block content %}
+<div class="admin-page-head">
+  <div>
+    <a class="back-link" href="/admin/projects">&larr; All projects</a>
+    <h1 class="admin-title">Add project</h1>
+  </div>
+</div>
+
+<form id="project-form" class="panel form" novalidate>
+  <div class="form-row">
+    <div class="field" data-field="section_id">
+      <label for="section_id">Section</label>
+      <select id="section_id" name="section_id" required>
+        <option value="">Choose a section…</option>
+        {% for s in sections %}
+        <option value="{{ s.id }}"{% if preselect_id == s.id %} selected{% endif %}>{{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field" data-field="title">
+      <label for="title">Title</label>
+      <input id="title" name="title" type="text" required maxlength="{{ limits.title_max }}"
+             placeholder="e.g. Padma Madhav, Kothrud (2 BHK)">
+    </div>
+  </div>
+
+  <div class="field" data-field="images">
+    <span class="field-label">Images</span>
+    {% with picker_id = "new-images" %}{% include "admin/_image_picker.html" %}{% endwith %}
+  </div>
+
+  <div class="progress" hidden><div class="progress-bar"></div></div>
+  <p class="form-error" role="alert" hidden></p>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Create project</button>
+    <a class="btn btn-ghost" href="/admin/projects">Cancel</a>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/admin/image_picker.js"></script>
+<script src="/static/js/admin/project_new.js"></script>
+{% endblock %}

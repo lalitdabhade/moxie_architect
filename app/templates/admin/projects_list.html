@@ -1,0 +1,52 @@
+{% extends "admin/base.html" %}
+{% block title %}Projects{% endblock %}
+{% block content %}
+<div class="admin-page-head">
+  <h1 class="admin-title">Projects</h1>
+  <a class="btn btn-primary" href="/admin/projects/new{% if current_section %}?section={{ current_section.slug }}{% endif %}">Add project</a>
+</div>
+
+<nav class="tabs" aria-label="Filter by section">
+  <a href="/admin/projects"{% if not current_section %} aria-current="page"{% endif %}>
+    All <span class="tab-count">{{ counts.values()|sum }}</span>
+  </a>
+  {% for s in SECTIONS %}
+  <a href="/admin/projects?section={{ s.slug }}"{% if current_section and current_section.id == s.id %} aria-current="page"{% endif %}>
+    {{ s.name }} <span class="tab-count">{{ counts.get(s.id, 0) }}</span>
+  </a>
+  {% endfor %}
+</nav>
+
+{% if projects %}
+<ul class="project-list" id="project-list">
+  {% for p in projects %}
+  <li class="project-row" data-project-id="{{ p.id }}">
+    <a class="project-thumb" href="/admin/projects/{{ p.id }}" tabindex="-1" aria-hidden="true">
+      {% if p.images %}
+      <img src="{{ p.images[0].url }}" alt="" loading="lazy">
+      {% else %}
+      <span class="thumb-empty">No images</span>
+      {% endif %}
+    </a>
+    <div class="project-info">
+      <a class="project-title" href="/admin/projects/{{ p.id }}">{{ p.title }}</a>
+      <p class="project-meta">
+        <span>{{ p.section.name }}</span>
+        <span>{{ p.images|length }} image{{ "" if p.images|length == 1 else "s" }}</span>
+        <span>Added {{ p.created_at[:10] }}</span>
+      </p>
+    </div>
+    <div class="project-actions">
+      <a class="btn btn-small btn-ghost" href="/admin/projects/{{ p.id }}">Edit</a>
+      <button type="button" class="btn btn-small btn-danger" data-delete-project="{{ p.id }}" data-title="{{ p.title }}">Delete</button>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+<div class="empty-state" id="empty-state"{% if projects %} hidden{% endif %}>
+  <p>No projects {% if current_section %}in {{ current_section.name }} {% endif %}yet.</p>
+  <a class="btn btn-primary" href="/admin/projects/new{% if current_section %}?section={{ current_section.slug }}{% endif %}">Add the first one</a>
+</div>
+{% endblock %}
+{% block scripts %}<script src="/static/js/admin/projects_list.js"></script>{% endblock %}

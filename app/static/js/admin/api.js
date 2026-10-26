@@ -39,6 +39,61 @@
     return data;
   }
 
+  /** Multipart upload with progress (fetch cannot report upload progress). */
+  function upload(url, formData, onProgress) {
+    return new Promise(function (resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", url);
+      xhr.setRequestHeader("Accept", "application/json");
+      xhr.setRequestHeader("X-CSRF-Token", csrfToken());
+      if (onProgress) {
+        xhr.upload.addEventListener("progress", function (e) {
+          if (e.lengthComputable) onProgress(e.loaded / e.total);
+        });
+      }
+      xhr.onload = function () {
+        var data = null;
+        try { data = JSON.parse(xhr.responseText); } catch (e) { data = null; }
+        if (xhr.status >= 200 && xhr.status < 300) return resolve(data);
+        if (xhr.status === 401) window.location.href = "/admin/login";
+        var err = new Error((data && data.error && data.error.message) || "Upload failed (" + xhr.status + ").");
+        err.status = xhr.status;
+        err.fields = (data && data.error && data.error.fields) || {};
+        reject(err);
+      };
+      xhr.onerror = function () { reject(new Error("Network error - could not reach the server.")); };
+      xhr.send(formData);
+    });
+  }
+
+  /** Show per-field errors on elements with data-field="name"; returns true if any were shown. */
+  function showFieldErrors(form, fields) {
+    clearFieldErrors(form);
+    var shown = false;
+    Object.keys(fields || {}).forEach(function (name) {
+      var wrap = form.querySelector('[data-field="' + name + '"]');
+      if (!wrap) return;
+      wrap.classList.add("has-error");
+      var p = document.createElement("p");
+      p.className = "field-error";
+      p.textContent = fields[name];
+      wrap.appendChild(p);
+      shown = true;
+    });
+    return shown;
+  }
+
+  function clearFieldErrors(form) {
+    form.querySelectorAll(".has-error").forEach(function (el) { el.classList.remove("has-error"); });
+    form.querySelectorAll(".field-error").forEach(function (el) { el.remove(); });
+  }
+
+  function formatBytes(n) {
+    if (n < 1024) return n + " B";
+    if (n < 1048576) return Math.round(n / 1024) + " KB";
+    return (n / 1048576).toFixed(1) + " MB";
+  }
+
   var flashTimer;
   function flash(message, kind) {
     var el = document.getElementById("flash");
@@ -79,6 +134,10 @@
     put: function (url, body) { return request("PUT", url, body); },
     patch: function (url, body) { return request("PATCH", url, body); },
     del: function (url) { return request("DELETE", url); },
+    upload: upload,
+    showFieldErrors: showFieldErrors,
+    clearFieldErrors: clearFieldErrors,
+    formatBytes: formatBytes,
     flash: flash,
     flashNext: flashNext
   };

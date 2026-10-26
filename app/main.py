@@ -49,6 +49,7 @@ def create_app() -> FastAPI:
         return response
 
     register_error_handlers(app, templates)
+    app.add_exception_handler(admin_pages.LoginRequired, admin_pages.login_required_handler)
 
     app.mount("/static", StaticFiles(directory=BASE_DIR / "app" / "static"), name="static")
     # Only project images are public. uploads/layouts is deliberately NOT mounted.
