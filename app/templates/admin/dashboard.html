@@ -1,0 +1,21 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="admin-page-head">
+  <h1 class="admin-title">Welcome, {{ admin.username }}</h1>
+</div>
+<div class="stat-grid">
+  <a class="stat-card" href="/admin/projects">
+    <span class="stat-value">{{ project_count }}</span>
+    <span class="stat-label">Projects</span>
+  </a>
+  <a class="stat-card" href="/admin/inquiries">
+    <span class="stat-value">{{ inquiry_count }}</span>
+    <span class="stat-label">Inquiries</span>
+  </a>
+</div>
+<div class="quick-actions">
+  <a class="btn btn-primary" href="/admin/projects/new">Add project</a>
+  <a class="btn btn-ghost" href="/admin/inquiries">View inquiries</a>
+</div>
+{% endblock %}

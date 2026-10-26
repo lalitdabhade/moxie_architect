@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <p class="eyebrow">Architecture · Interiors</p>
+    <h1 class="hero-title">Spaces designed with<br>clarity, warmth and craft.</h1>
+    <p class="hero-lead">From a single apartment to a full commercial complex, we plan, design and detail
+      spaces that feel calm, work hard and age well.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="/inquiry">Start an inquiry</a>
+      <a class="btn btn-ghost" href="#services">View our work</a>
+    </div>
+  </div>
+</section>
+
+<section id="services" class="section">
+  <div class="container">
+    <h2 class="section-title">Our work</h2>
+    <ol class="tile-grid">
+      {% for s in SECTIONS %}
+      <li>
+        <a class="tile" href="/{{ s.slug }}">
+          <span class="tile-num">{{ "%02d"|format(loop.index) }}</span>
+          <span class="tile-name">{{ s.name }}</span>
+          <span class="tile-text">{{ s.tagline }}</span>
+          <span class="tile-arrow" aria-hidden="true">&rarr;</span>
+        </a>
+      </li>
+      {% endfor %}
+      <li>
+        <a class="tile tile-accent" href="/inquiry">
+          <span class="tile-num">05</span>
+          <span class="tile-name">Inquiry</span>
+          <span class="tile-text">Tell us about your project and budget.</span>
+          <span class="tile-arrow" aria-hidden="true">&rarr;</span>
+        </a>
+      </li>
+    </ol>
+  </div>
+</section>
+{% endblock %}

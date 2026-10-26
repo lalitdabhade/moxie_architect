@@ -1,0 +1,10 @@
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p class="footer-brand">{{ SITE.full_name }}</p>
+    <ul class="footer-links">
+      {% for s in SECTIONS %}<li><a href="/{{ s.slug }}">{{ s.name }}</a></li>{% endfor %}
+      <li><a href="/inquiry">Inquiry</a></li>
+    </ul>
+    <p class="footer-note">{{ SITE.location }} · &copy; {{ SITE.name }}</p>
+  </div>
+</footer>

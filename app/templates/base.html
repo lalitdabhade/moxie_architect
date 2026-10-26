@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Studio{% endblock %} · {{ SITE.full_name }}</title>
+  <meta name="description" content="{% block description %}Architecture and interior design studio — residential, commercial, bungalow and complex projects.{% endblock %}">
+  <link rel="stylesheet" href="/static/css/site.css">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main">Skip to content</a>
+  {% include "partials/nav.html" %}
+  <main id="main">
+    {% block content %}{% endblock %}
+  </main>
+  {% include "partials/footer.html" %}
+  <script src="/static/js/nav.js" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
