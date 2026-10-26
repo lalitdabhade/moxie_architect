@@ -4,13 +4,16 @@ from fastapi.responses import RedirectResponse
 from pymysql.connections import Connection
 from starlette.exceptions import HTTPException
 
+from app.api.admin import inquiry_page
 from app.constants import (
-    MAX_IMAGES_PER_UPLOAD, PROJECT_IMAGE_MAX_BYTES, SECTIONS, SECTIONS_BY_SLUG, TITLE_MAX_LENGTH,
+    MAX_IMAGES_PER_UPLOAD, PROJECT_IMAGE_MAX_BYTES, SECTIONS, SECTIONS_BY_SLUG, SERVICE_TYPES,
+    TITLE_MAX_LENGTH,
 )
 from app.db import get_db
+from app.repositories import inquiries as inquiries_repo
 from app.repositories import projects as projects_repo
 from app.security import load_session, new_login_csrf_token, set_login_csrf_cookie
-from app.serializers import project_json
+from app.serializers import inquiry_json, project_json
 from app.templating import templates
 
 router = APIRouter(prefix="/admin", include_in_schema=False)
@@ -96,3 +99,21 @@ def edit_project_page(request: Request, project_id: int,
         raise HTTPException(404, "Project not found.")
     return _render(request, "admin/project_edit.html", session, "projects",
                    project=project_json(project), limits=UPLOAD_LIMITS, sections=SECTIONS)
+
+
+@router.get("/inquiries")
+def inquiries_page(request: Request, service_type: str | None = None, page: int = 1,
+                   session: dict = Depends(admin_session), conn: Connection = Depends(get_db)):
+    current = service_type if service_type in SERVICE_TYPES else None
+    data = inquiry_page(conn, current, page)
+    return _render(request, "admin/inquiries_list.html", session, "inquiries",
+                   current_service=current, service_types=SERVICE_TYPES, **data)
+
+
+@router.get("/inquiries/{inquiry_id}")
+def inquiry_detail_page(request: Request, inquiry_id: int,
+                        session: dict = Depends(admin_session), conn: Connection = Depends(get_db)):
+    row = inquiries_repo.get(conn, inquiry_id)
+    if row is None:
+        raise HTTPException(404, "Inquiry not found.")
+    return _render(request, "admin/inquiry_detail.html", session, "inquiries", inquiry=inquiry_json(row))

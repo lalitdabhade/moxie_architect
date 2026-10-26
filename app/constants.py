@@ -39,6 +39,12 @@ PROJECT_IMAGE_MAX_BYTES = 5 * 1024 * 1024
 MAX_IMAGES_PER_UPLOAD = 30
 TITLE_MAX_LENGTH = 200
 
+LAYOUT_FILE_TYPES = {"jpeg", "png", "pdf"}
+LAYOUT_MAX_BYTES = 10 * 1024 * 1024
+AREA_MIN_SQFT = 50
+AREA_MAX_SQFT = 1_000_000
+INQUIRIES_PER_PAGE = 25
+
 SERVICE_TYPES = {
     "interior": "Interior",
     "bungalow_apartment": "Bungalow/Apartment Design",

@@ -1,0 +1,45 @@
+{% extends "admin/base.html" %}
+{% block title %}Inquiry from {{ inquiry.name }}{% endblock %}
+{% block content %}
+<div class="admin-page-head">
+  <div>
+    <a class="back-link" href="/admin/inquiries">&larr; All inquiries</a>
+    <h1 class="admin-title">{{ inquiry.name }}</h1>
+    <p class="admin-subtitle">Received {{ inquiry.created_at|datetime }} · #{{ inquiry.id }}</p>
+  </div>
+  <button type="button" class="btn btn-danger" id="delete-inquiry"
+          data-id="{{ inquiry.id }}" data-name="{{ inquiry.name }}">Delete inquiry</button>
+</div>
+
+<div class="detail-grid">
+  <section class="panel" aria-labelledby="contact-heading">
+    <h2 class="panel-title" id="contact-heading">Contact</h2>
+    <dl class="detail-list">
+      <div><dt>Name</dt><dd>{{ inquiry.name }}</dd></div>
+      <div><dt>Mobile</dt><dd><a href="tel:{{ inquiry.mobile }}">{{ inquiry.mobile }}</a></dd></div>
+      <div><dt>Email</dt><dd><a href="mailto:{{ inquiry.email }}">{{ inquiry.email }}</a></dd></div>
+      <div><dt>Address</dt><dd class="preserve-lines">{{ inquiry.address }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="panel" aria-labelledby="project-heading">
+    <h2 class="panel-title" id="project-heading">Project</h2>
+    <dl class="detail-list">
+      <div><dt>Service</dt><dd><span class="badge badge-{{ inquiry.service_type.value }}">{{ inquiry.service_type.label }}</span></dd></div>
+      {% if inquiry.service_type.value == "interior" %}
+      <div><dt>House type</dt><dd>{{ inquiry.house_type_label }}</dd></div>
+      {% else %}
+      <div><dt>Area</dt><dd>{{ "{:,}".format(inquiry.area_sqft) }} sq ft</dd></div>
+      <div><dt>Layout</dt><dd>
+        {% if inquiry.layout %}
+        <a class="btn btn-small btn-primary" href="{{ inquiry.layout.download_url }}" download>Download layout</a>
+        <span class="file-name">{{ inquiry.layout.filename }}</span>
+        {% else %}—{% endif %}
+      </dd></div>
+      {% endif %}
+      <div><dt>Budget</dt><dd>{{ inquiry.budget_range.label }}</dd></div>
+    </dl>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="/static/js/admin/inquiry_detail.js"></script>{% endblock %}

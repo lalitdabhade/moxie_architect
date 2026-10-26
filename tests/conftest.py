@@ -20,7 +20,7 @@ db.use_database(settings.db_name_test)
 
 from app.main import app  # noqa: E402  (import after switching databases)
 from app.repositories import admins as admins_repo  # noqa: E402
-from app.security import hash_password, login_limiter  # noqa: E402
+from app.security import hash_password, inquiry_limiter, login_limiter  # noqa: E402
 
 TEST_USER = "tester"
 TEST_PASSWORD = "correct-horse-battery"
@@ -54,6 +54,7 @@ def clean_db():
     finally:
         conn.close()
     login_limiter.clear()
+    inquiry_limiter.clear()
     yield
 
 

@@ -176,3 +176,32 @@ class LoginRateLimiter:
 
 
 login_limiter = LoginRateLimiter()
+
+
+class RateLimiter:
+    """Simple in-memory sliding window: at most `limit` hits per key per window."""
+
+    def __init__(self, limit: int, window_seconds: int):
+        self.limit = limit
+        self.window = window_seconds
+        self._hits: dict[str, deque[float]] = {}
+        self._lock = threading.Lock()
+
+    def hit(self, key: str) -> int:
+        """Record a hit. Returns 0 if allowed, otherwise seconds to wait (the hit is not recorded)."""
+        now = time.monotonic()
+        with self._lock:
+            q = self._hits.setdefault(key, deque())
+            while q and q[0] <= now - self.window:
+                q.popleft()
+            if len(q) >= self.limit:
+                return int(q[0] + self.window - now) + 1
+            q.append(now)
+            return 0
+
+    def clear(self) -> None:
+        with self._lock:
+            self._hits.clear()
+
+
+inquiry_limiter = RateLimiter(limit=10, window_seconds=60 * 60)

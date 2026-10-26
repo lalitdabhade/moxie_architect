@@ -1,0 +1,74 @@
+{% extends "admin/base.html" %}
+{% block title %}Inquiries{% endblock %}
+{% block content %}
+<div class="admin-page-head">
+  <h1 class="admin-title">Inquiries</h1>
+</div>
+
+<nav class="tabs" aria-label="Filter by service">
+  <a href="/admin/inquiries"{% if not current_service %} aria-current="page"{% endif %}>
+    All <span class="tab-count">{{ counts.values()|sum }}</span>
+  </a>
+  {% for value, label in service_types.items() %}
+  <a href="/admin/inquiries?service_type={{ value }}"{% if current_service == value %} aria-current="page"{% endif %}>
+    {{ label }} <span class="tab-count">{{ counts.get(value, 0) }}</span>
+  </a>
+  {% endfor %}
+</nav>
+
+{% if inquiries %}
+<div class="table-wrap">
+  <table class="data-table inquiry-table" id="inquiry-table">
+    <thead>
+      <tr>
+        <th scope="col">Received</th>
+        <th scope="col">Name</th>
+        <th scope="col">Contact</th>
+        <th scope="col">Service</th>
+        <th scope="col">Details</th>
+        <th scope="col">Budget</th>
+        <th scope="col"><span class="visually-hidden">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for q in inquiries %}
+      <tr data-inquiry-id="{{ q.id }}">
+        <td data-label="Received" class="nowrap">{{ q.created_at|datetime }}</td>
+        <td data-label="Name"><a class="row-link" href="/admin/inquiries/{{ q.id }}">{{ q.name }}</a></td>
+        <td data-label="Contact">
+          <a href="tel:{{ q.mobile }}">{{ q.mobile }}</a><br>
+          <a class="muted-link" href="mailto:{{ q.email }}">{{ q.email }}</a>
+        </td>
+        <td data-label="Service"><span class="badge badge-{{ q.service_type.value }}">{{ q.service_type.label }}</span></td>
+        <td data-label="Details">
+          {% if q.service_type.value == "interior" %}
+            {{ q.house_type_label }}
+          {% else %}
+            {{ "{:,}".format(q.area_sqft) }} sq ft
+            {% if q.layout %}<span class="file-tag" title="Layout attached">Layout</span>{% endif %}
+          {% endif %}
+        </td>
+        <td data-label="Budget" class="nowrap">{{ q.budget_range.label }}</td>
+        <td class="row-actions">
+          <a class="btn btn-small btn-ghost" href="/admin/inquiries/{{ q.id }}">View</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if pages > 1 %}
+{% set base = "/admin/inquiries?" ~ ("service_type=" ~ current_service ~ "&" if current_service else "") %}
+<nav class="pagination" aria-label="Pages">
+  {% if page > 1 %}<a class="btn btn-small btn-ghost" href="{{ base }}page={{ page - 1 }}">&larr; Newer</a>{% endif %}
+  <span class="pagination-info">Page {{ page }} of {{ pages }} · {{ total }} inquiries</span>
+  {% if page < pages %}<a class="btn btn-small btn-ghost" href="{{ base }}page={{ page + 1 }}">Older &rarr;</a>{% endif %}
+</nav>
+{% endif %}
+{% else %}
+<div class="empty-state">
+  <p>No inquiries {% if current_service %}for {{ service_types[current_service] }} {% endif %}yet.</p>
+</div>
+{% endif %}
+{% endblock %}

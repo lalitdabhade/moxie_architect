@@ -2,7 +2,9 @@
 from fastapi import APIRouter, Depends, Request
 from pymysql.connections import Connection
 
-from app.constants import SECTIONS
+from app.constants import (
+    AREA_MAX_SQFT, AREA_MIN_SQFT, BUDGET_RANGES, HOUSE_TYPES, LAYOUT_MAX_BYTES, SECTIONS, SERVICE_TYPES,
+)
 from app.db import get_db
 from app.repositories import projects as projects_repo
 from app.serializers import project_json
@@ -14,6 +16,19 @@ router = APIRouter(include_in_schema=False)
 @router.get("/")
 def home(request: Request):
     return templates.TemplateResponse(request, "public/home.html", {"active": "home"})
+
+
+@router.get("/inquiry")
+def inquiry(request: Request):
+    return templates.TemplateResponse(request, "public/inquiry.html", {
+        "active": "inquiry",
+        "service_types": SERVICE_TYPES,
+        "house_types": HOUSE_TYPES,
+        "budget_ranges": BUDGET_RANGES,
+        "area_min": AREA_MIN_SQFT,
+        "area_max": AREA_MAX_SQFT,
+        "layout_max_bytes": LAYOUT_MAX_BYTES,
+    })
 
 
 def _section_page(section: dict):

@@ -1,22 +1,27 @@
 """Admin JSON API: /api/admin/*"""
+import math
+
 from fastapi import APIRouter, Depends, File, Form, Request, Response, UploadFile
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from pymysql.connections import Connection
 
 from app.config import settings
 from app.constants import (
-    MAX_IMAGES_PER_UPLOAD, PROJECT_IMAGE_MAX_BYTES, PROJECT_IMAGE_TYPES, SECTIONS_BY_ID,
+    INQUIRIES_PER_PAGE, MAX_IMAGES_PER_UPLOAD, PROJECT_IMAGE_MAX_BYTES, PROJECT_IMAGE_TYPES,
+    SECTIONS_BY_ID, SERVICE_TYPES,
 )
 from app.db import get_db
 from app.errors import ApiError
 from app.repositories import admins as admins_repo
+from app.repositories import inquiries as inquiries_repo
 from app.repositories import projects as projects_repo
 from app.security import (
     LOGIN_CSRF_COOKIE, burn_password_check, check_login_csrf, end_session,
     login_limiter, require_admin, start_session, verify_password,
 )
-from app.serializers import project_json
-from app.uploads import delete_file, is_present, save_upload, slugify
+from app.serializers import inquiry_json, project_json
+from app.uploads import delete_file, is_present, resolve_inside, save_upload, slugify
 from app.validation import clean_title, parse_section
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -231,3 +236,71 @@ def reorder_images(project_id: int, body: ImageOrderIn, session: dict = Depends(
                        fields={"image_ids": "Must contain each of the project's images exactly once."})
     conn.commit()
     return {"project": project_json(projects_repo.get_project(conn, project_id))}
+
+
+# ---------- inquiries ----------
+
+LAYOUT_MEDIA_TYPES = {".jpg": "image/jpeg", ".png": "image/png", ".pdf": "application/pdf"}
+
+
+def parse_service_filter(service_type: str | None) -> str | None:
+    if not service_type:
+        return None
+    if service_type not in SERVICE_TYPES:
+        raise ApiError(422, "Unknown service type.", fields={"service_type": "Choose a valid service type."})
+    return service_type
+
+
+def inquiry_page(conn: Connection, service_type: str | None, page: int) -> dict:
+    """Shared by the JSON API and the admin page."""
+    counts = inquiries_repo.count_by_service(conn)
+    total = counts.get(service_type, 0) if service_type else sum(counts.values())
+    pages = max(1, math.ceil(total / INQUIRIES_PER_PAGE))
+    page = min(max(1, page), pages)
+    rows = inquiries_repo.list_page(conn, service_type, INQUIRIES_PER_PAGE, (page - 1) * INQUIRIES_PER_PAGE)
+    return {"inquiries": [inquiry_json(r) for r in rows], "total": total, "page": page, "pages": pages,
+            "per_page": INQUIRIES_PER_PAGE, "counts": counts}
+
+
+def _get_inquiry_or_404(conn: Connection, inquiry_id: int) -> dict:
+    row = inquiries_repo.get(conn, inquiry_id)
+    if row is None:
+        raise ApiError(404, "Inquiry not found.")
+    return row
+
+
+@router.get("/inquiries")
+def list_inquiries(service_type: str | None = None, page: int = 1,
+                   session: dict = Depends(require_admin), conn: Connection = Depends(get_db)):
+    return inquiry_page(conn, parse_service_filter(service_type), page)
+
+
+@router.get("/inquiries/{inquiry_id}")
+def get_inquiry(inquiry_id: int, session: dict = Depends(require_admin), conn: Connection = Depends(get_db)):
+    return {"inquiry": inquiry_json(_get_inquiry_or_404(conn, inquiry_id))}
+
+
+@router.delete("/inquiries/{inquiry_id}")
+def delete_inquiry(inquiry_id: int, session: dict = Depends(require_admin), conn: Connection = Depends(get_db)):
+    _get_inquiry_or_404(conn, inquiry_id)
+    layout = inquiries_repo.delete(conn, inquiry_id)
+    conn.commit()
+    if layout:
+        delete_file(settings.layout_upload_dir, layout)
+    return {"ok": True}
+
+
+@router.get("/inquiries/{inquiry_id}/layout")
+def download_layout(inquiry_id: int, session: dict = Depends(require_admin), conn: Connection = Depends(get_db)):
+    row = _get_inquiry_or_404(conn, inquiry_id)
+    if not row["layout_file_path"]:
+        raise ApiError(404, "This inquiry has no layout file.")
+    path = resolve_inside(settings.layout_upload_dir, row["layout_file_path"])
+    if path is None or not path.is_file():
+        raise ApiError(404, "The layout file is missing from storage.")
+    return FileResponse(
+        path,
+        media_type=LAYOUT_MEDIA_TYPES.get(path.suffix.lower(), "application/octet-stream"),
+        filename=row["layout_original_name"] or path.name,
+        headers={"Cache-Control": "no-store"},
+    )

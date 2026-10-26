@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Inquiry{% endblock %}
+{% block description %}Tell {{ SITE.full_name }} about your interior, bungalow or apartment project.{% endblock %}
+{% block content %}
+<header class="page-header">
+  <div class="container">
+    <p class="eyebrow">05 · Inquiry</p>
+    <h1 class="page-title">Tell us about your project</h1>
+    <p class="page-lead">Share a few details and we'll get back to you to discuss your space, timeline and budget.</p>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container narrow">
+    <div class="success-panel" id="inquiry-success" tabindex="-1" hidden>
+      <span class="success-mark" aria-hidden="true"></span>
+      <h2 class="success-title">Thank you!</h2>
+      <p class="success-text" id="success-text"></p>
+      <button type="button" class="btn btn-ghost" id="send-another">Send another inquiry</button>
+    </div>
+
+    <noscript><p class="form-error">Please enable JavaScript to send an inquiry.</p></noscript>
+
+    <form id="inquiry-form" class="form inquiry-form" novalidate data-max-bytes="{{ layout_max_bytes }}"
+          data-area-min="{{ area_min }}" data-area-max="{{ area_max }}">
+
+      <fieldset class="form-section">
+        <legend class="form-section-title"><span class="step">1</span> Your details</legend>
+        <div class="form-grid">
+          <div class="field" data-field="name">
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="100">
+          </div>
+          <div class="field" data-field="mobile">
+            <label for="mobile">Mobile No</label>
+            <input id="mobile" name="mobile" type="tel" inputmode="numeric" autocomplete="tel-national"
+                   required maxlength="10" pattern="[0-9]{10}" placeholder="10-digit number">
+          </div>
+          <div class="field" data-field="email">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" required maxlength="254">
+          </div>
+          <div class="field field-wide" data-field="address">
+            <label for="address">Address</label>
+            <textarea id="address" name="address" autocomplete="street-address" required minlength="5" maxlength="500" rows="3"></textarea>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section" data-field="service_type">
+        <legend class="form-section-title"><span class="step">2</span> What do you need?</legend>
+        <div class="choice-cards">
+          {% for value, label in service_types.items() %}
+          <label class="choice-card">
+            <input type="radio" name="service_type" value="{{ value }}" required>
+            <span class="choice-card-body">
+              <span class="choice-card-title">{{ label }}</span>
+              <span class="choice-card-text">
+                {% if value == "interior" %}Interiors for your home or office.{% else %}Architectural design for a bungalow or apartment building.{% endif %}
+              </span>
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section branch" data-branch="interior" hidden disabled>
+        <legend class="form-section-title"><span class="step">3</span> About your home</legend>
+        <div class="field" data-field="house_type" role="radiogroup" aria-labelledby="house-type-label">
+          <span class="field-label" id="house-type-label">House type</span>
+          <div class="chips">
+            {% for value, label in house_types.items() %}
+            <label class="chip"><input type="radio" name="house_type" value="{{ value }}" required><span>{{ label }}</span></label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="field" data-field="house_type_other" id="other-wrap" hidden>
+          <label for="house_type_other">Please specify</label>
+          <input id="house_type_other" name="house_type_other" type="text" maxlength="100" required disabled
+                 placeholder="e.g. 4 BHK, Row house, Penthouse">
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section branch" data-branch="bungalow_apartment" hidden disabled>
+        <legend class="form-section-title"><span class="step">3</span> About your site</legend>
+        <div class="form-grid">
+          <div class="field" data-field="area_sqft">
+            <label for="area_sqft">Area <span class="label-hint">(sq ft)</span></label>
+            <input id="area_sqft" name="area_sqft" type="number" inputmode="numeric" min="{{ area_min }}"
+                   max="{{ area_max }}" step="1" required placeholder="e.g. 2400">
+          </div>
+          <div class="field field-wide" data-field="layout">
+            <span class="field-label" id="layout-label">Upload layout</span>
+            <label class="file-input">
+              <input id="layout" name="layout" type="file" class="visually-hidden" required
+                     accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" aria-labelledby="layout-label">
+              <span class="btn btn-ghost btn-small file-input-btn">Choose file</span>
+              <span class="file-input-name" id="layout-name">No file chosen</span>
+            </label>
+            <p class="field-hint">JPG, PNG or PDF · max {{ (layout_max_bytes / 1048576)|int }} MB</p>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section branch" data-branch="budget" hidden disabled>
+        <legend class="form-section-title"><span class="step">4</span> Budget</legend>
+        <div class="field" data-field="budget_range" role="radiogroup" aria-labelledby="budget-label">
+          <span class="field-label visually-hidden" id="budget-label">Budget range</span>
+          <div class="chips">
+            {% for value, label in budget_ranges.items() %}
+            <label class="chip"><input type="radio" name="budget_range" value="{{ value }}" required><span>{{ label }}</span></label>
+            {% endfor %}
+          </div>
+        </div>
+      </fieldset>
+
+      {# Honeypot: invisible to people; bots that fill it are silently ignored. #}
+      <div class="hp-field" aria-hidden="true">
+        <label for="website">Leave this empty</label>
+        <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+
+      <p class="form-error" id="inquiry-error" role="alert" hidden></p>
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit">Send inquiry</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/js/inquiry.js" defer></script>{% endblock %}

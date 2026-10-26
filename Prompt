@@ -1,0 +1,84 @@
+I want to build a website for an architecture and interior design firm, with an admin panel.
+Everything runs locally for now. The backend must expose a clean JSON REST API under /api
+so a mobile app can reuse it later.
+
+## Tech stack
+- Backend: Python, FastAPI, PyMySQL (plain parameterized SQL, no ORM), python-dotenv, local MySQL
+- Frontend: server-rendered pages with Jinja2 templates + vanilla JavaScript + CSS (no frameworks, no build step).
+  Responsive and mobile-friendly.
+- Admin auth: session cookie (HttpOnly) after login, passwords hashed with bcrypt, CSRF protection on admin forms
+- Config in .env (never commit). Provide .env.example.
+
+## Public website (no login)
+Top navigation / home page with 5 sections:
+1. Residential Interior Design
+2. Commercial Interior Design
+3. Bunglow Design
+4. Apartment and Commercial Complex
+5. Inquiry
+
+Sections 1-4: each has its own page listing that category's projects. For each project show:
+- Title first, e.g. "Padma Madhav, Kothrud (2 BHK)", "XYZ Park, Kothrud (Office)",
+  "Sai Bunglow, Kothrud (Bunglow)", "Sai Complex, Kothrud (Complex)"
+- Below the title, the project's images in an animated auto-sliding carousel (smooth fade/slide transition,
+  prev/next arrows, dots, swipe support, pause on hover). Clicking an image opens a full-screen lightbox.
+- Lazy-load images. Show a friendly message if a section has no projects yet.
+
+Section 5 - Inquiry form (also a JSON endpoint POST /api/inquiries):
+- Common fields: Name, Mobile No (10-digit validation), Email (format validation), Address
+- Radio: "Interior" or "Bunglow/Apartment Design"
+
+If "Interior" is selected, show:
+  - House type (radio): 1 BHK, 2 BHK, 3 BHK, Bunglow, Other
+    (if Other, show a text box to specify)
+  - Budget (radio/dropdown): Under 5L, 5-10L, 10-20L, 20-50L, Above 50L
+
+If "Bunglow/Apartment Design" is selected, show:
+  - Area (number, in sq ft)
+  - Upload Layout (file upload button): accepts JPG, PNG, PDF only, max 10 MB
+  - Budget (same ranges as above)
+
+Fields switch dynamically without page reload; only the visible section's fields are required and
+submitted. Validate on both client and server (check file type by content, not only extension).
+On submit save to MySQL, show a success message and reset the form.
+
+## Admin panel (/admin)
+- Login page (username + password). Seed one admin via a script using credentials from .env.
+  No hardcoded passwords. Rate-limit login attempts.
+- Add Project form: choose section (1-4), title, upload multiple images (JPG/PNG/WEBP, max 5 MB each,
+  auto-generate sensible filenames, preview before upload)
+- Manage Projects: list by section, edit title, add/remove/reorder images, delete project
+- View Inquiries: table, newest first, filter by service type, click to view full details,
+  download the uploaded layout file, delete inquiry
+- Logout
+
+## Data model
+- admins (id, username, password_hash, created_at)
+- projects (id, section_id, title, created_at)
+- project_images (id, project_id, path, sort_order)
+- inquiries (id, name, mobile, email, address, service_type [interior|bunglow_apartment],
+  house_type nullable, house_type_other nullable, area_sqft nullable,
+  layout_file_path nullable, budget_range, created_at)
+- Create tables automatically on startup.
+
+## Security / storage rules
+- Project images: stored in /uploads/projects, publicly served.
+- Inquiry layout files: stored in /uploads/layouts, NOT publicly served. Only logged-in admins can download them
+  via a protected route. Randomized filenames.
+- Use parameterized queries only, escape template output, validate everything, return proper error codes.
+- Add .gitignore (Python, .env, venv, uploads/).
+
+## Design
+Clean, elegant, architectural look: white/off-white background, charcoal text, one warm accent colour,
+generous spacing, a good serif + sans-serif font pairing (use local or system fonts, no external CDNs).
+
+## Process (important)
+1. FIRST give me a plan only: folder structure, DB schema, API list, page list, build phases. No code yet.
+2. After I approve, build in phases and stop after each so I can test:
+   Phase 1: project setup, DB, admin login
+   Phase 2: admin add/manage projects with image upload
+   Phase 3: public section pages with carousel
+   Phase 4: inquiry form (dynamic fields, layout upload) + admin inquiry view
+   Phase 5: polish, README with run steps, basic tests
+3. Initialize git and commit after each phase with a clear message.
+4. Ask me before installing anything outside the project.
