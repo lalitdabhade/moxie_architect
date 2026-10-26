@@ -31,24 +31,29 @@
       </tr>
     </thead>
     <tbody>
+      {# Each cell holds one .cell wrapper so the stacked mobile layout stays label | value. #}
       {% for q in inquiries %}
       <tr data-inquiry-id="{{ q.id }}">
-        <td data-label="Received" class="nowrap">{{ q.created_at|datetime }}</td>
-        <td data-label="Name"><a class="row-link" href="/admin/inquiries/{{ q.id }}">{{ q.name }}</a></td>
+        <td data-label="Received"><div class="cell nowrap">{{ q.created_at|datetime }}</div></td>
+        <td data-label="Name"><div class="cell"><a class="row-link" href="/admin/inquiries/{{ q.id }}">{{ q.name }}</a></div></td>
         <td data-label="Contact">
-          <a href="tel:{{ q.mobile }}">{{ q.mobile }}</a><br>
-          <a class="muted-link" href="mailto:{{ q.email }}">{{ q.email }}</a>
+          <div class="cell">
+            <a href="tel:{{ q.mobile }}">{{ q.mobile }}</a><br>
+            <a class="muted-link" href="mailto:{{ q.email }}">{{ q.email }}</a>
+          </div>
         </td>
-        <td data-label="Service"><span class="badge badge-{{ q.service_type.value }}">{{ q.service_type.label }}</span></td>
+        <td data-label="Service"><div class="cell"><span class="badge badge-{{ q.service_type.value }}">{{ q.service_type.label }}</span></div></td>
         <td data-label="Details">
-          {% if q.service_type.value == "interior" %}
-            {{ q.house_type_label }}
-          {% else %}
-            {{ "{:,}".format(q.area_sqft) }} sq ft
-            {% if q.layout %}<span class="file-tag" title="Layout attached">Layout</span>{% endif %}
-          {% endif %}
+          <div class="cell">
+            {% if q.service_type.value == "interior" %}
+              {{ q.house_type_label }}
+            {% else %}
+              {{ "{:,}".format(q.area_sqft) }} sq ft
+              {% if q.layout %}<span class="file-tag" title="Layout attached">Layout</span>{% endif %}
+            {% endif %}
+          </div>
         </td>
-        <td data-label="Budget" class="nowrap">{{ q.budget_range.label }}</td>
+        <td data-label="Budget"><div class="cell nowrap">{{ q.budget_range.label }}</div></td>
         <td class="row-actions">
           <a class="btn btn-small btn-ghost" href="/admin/inquiries/{{ q.id }}">View</a>
         </td>

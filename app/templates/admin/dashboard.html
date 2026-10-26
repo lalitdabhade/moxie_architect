@@ -18,4 +18,24 @@
   <a class="btn btn-primary" href="/admin/projects/new">Add project</a>
   <a class="btn btn-ghost" href="/admin/inquiries">View inquiries</a>
 </div>
+
+<section class="panel recent-panel" aria-labelledby="recent-heading">
+  <div class="panel-head recent-head">
+    <h2 class="panel-title" id="recent-heading">Latest inquiries</h2>
+    {% if recent_inquiries %}<a class="back-link" href="/admin/inquiries">See all &rarr;</a>{% endif %}
+  </div>
+  {% if recent_inquiries %}
+  <ul class="recent-list">
+    {% for q in recent_inquiries %}
+    <li>
+      <a class="row-link" href="/admin/inquiries/{{ q.id }}">{{ q.name }}</a>
+      <span class="badge badge-{{ q.service_type.value }}">{{ q.service_type.label }}</span>
+      <span class="recent-meta">{{ q.budget_range.label }} · {{ q.created_at|datetime }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="empty-note">No inquiries yet. They will appear here as soon as someone uses the inquiry form.</p>
+  {% endif %}
+</section>
 {% endblock %}

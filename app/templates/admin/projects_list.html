@@ -8,11 +8,11 @@
 
 <nav class="tabs" aria-label="Filter by section">
   <a href="/admin/projects"{% if not current_section %} aria-current="page"{% endif %}>
-    All <span class="tab-count">{{ counts.values()|sum }}</span>
+    All <span class="tab-count" data-count-for="all">{{ counts.values()|sum }}</span>
   </a>
   {% for s in SECTIONS %}
   <a href="/admin/projects?section={{ s.slug }}"{% if current_section and current_section.id == s.id %} aria-current="page"{% endif %}>
-    {{ s.name }} <span class="tab-count">{{ counts.get(s.id, 0) }}</span>
+    {{ s.name }} <span class="tab-count" data-count-for="{{ s.slug }}">{{ counts.get(s.id, 0) }}</span>
   </a>
   {% endfor %}
 </nav>
@@ -20,7 +20,7 @@
 {% if projects %}
 <ul class="project-list" id="project-list">
   {% for p in projects %}
-  <li class="project-row" data-project-id="{{ p.id }}">
+  <li class="project-row" data-project-id="{{ p.id }}" data-section="{{ p.section.slug }}">
     <a class="project-thumb" href="/admin/projects/{{ p.id }}" tabindex="-1" aria-hidden="true">
       {% if p.images %}
       <img src="{{ p.images[0].url }}" alt="" loading="lazy">

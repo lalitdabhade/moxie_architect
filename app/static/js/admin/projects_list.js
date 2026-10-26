@@ -4,6 +4,11 @@
   var list = document.getElementById("project-list");
   if (!list) return;
 
+  function decrementCount(key) {
+    var el = document.querySelector('[data-count-for="' + key + '"]');
+    if (el) el.textContent = String(Math.max(0, parseInt(el.textContent, 10) - 1));
+  }
+
   list.addEventListener("click", async function (e) {
     var btn = e.target.closest("[data-delete-project]");
     if (!btn) return;
@@ -12,7 +17,10 @@
     btn.disabled = true;
     try {
       await api.del("/api/admin/projects/" + btn.dataset.deleteProject);
-      btn.closest(".project-row").remove();
+      var row = btn.closest(".project-row");
+      decrementCount("all");
+      decrementCount(row.dataset.section);
+      row.remove();
       api.flash("Project “" + title + "” deleted.");
       if (!list.children.length) {
         list.remove();

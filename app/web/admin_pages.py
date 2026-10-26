@@ -68,8 +68,9 @@ def dashboard(request: Request, session: dict = Depends(admin_session), conn: Co
         project_count = cur.fetchone()["n"]
         cur.execute("SELECT COUNT(*) AS n FROM inquiries")
         inquiry_count = cur.fetchone()["n"]
+    recent = [inquiry_json(r) for r in inquiries_repo.list_page(conn, None, 5, 0)]
     return _render(request, "admin/dashboard.html", session, "dashboard",
-                   project_count=project_count, inquiry_count=inquiry_count)
+                   project_count=project_count, inquiry_count=inquiry_count, recent_inquiries=recent)
 
 
 @router.get("/projects")

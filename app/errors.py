@@ -69,4 +69,10 @@ def register_error_handlers(app, templates) -> None:
     async def unhandled_handler(request: Request, exc: Exception):
         if _is_api(request):
             return JSONResponse(error_body("server_error", "Something went wrong."), status_code=500)
-        return HTMLResponse("<h1>Something went wrong.</h1>", status_code=500)
+        try:
+            return templates.TemplateResponse(
+                request, "public/error.html",
+                {"status": 500, "message": "Please try again in a moment."}, status_code=500,
+            )
+        except Exception:  # never let the error page itself fail
+            return HTMLResponse("<h1>Something went wrong.</h1>", status_code=500)

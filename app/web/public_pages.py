@@ -1,5 +1,6 @@
 """Server-rendered public pages."""
 from fastapi import APIRouter, Depends, Request
+from fastapi.responses import RedirectResponse
 from pymysql.connections import Connection
 
 from app.constants import (
@@ -11,6 +12,11 @@ from app.serializers import project_json
 from app.templating import templates
 
 router = APIRouter(include_in_schema=False)
+
+
+@router.get("/favicon.ico")
+def favicon():
+    return RedirectResponse("/static/favicon.svg", status_code=301)
 
 
 @router.get("/")
